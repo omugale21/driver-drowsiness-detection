@@ -1,37 +1,63 @@
-# 🚗 Driver Fatigue Detection System (AI-Based)
+# 🚗 AI Driver Monitoring System (Real-Time)
 
-This project is an AI-powered real-time system designed to detect driver fatigue using computer vision techniques. It identifies signs of drowsiness and yawning and triggers alerts to improve driving safety.
+An advanced **AI-powered Driver Monitoring System** that detects **drowsiness, yawning, and driver distraction** in real-time using computer vision and intelligent alert mechanisms.
 
----
-
-## 🚀 Features
-
-* Real-time face detection using dlib
-* Eye Aspect Ratio (EAR) based drowsiness detection
-* Mouth Aspect Ratio (MAR) based yawning detection
-* Intelligent alert system with sound notification
-* Smooth and stable UI (no flickering)
-* Threaded webcam stream for better performance
-* FPS display for performance monitoring
+This system enhances driving safety by providing **multi-level alerts, voice feedback, and attention tracking**.
 
 ---
 
-## 🧠 How It Works
+## 🚀 Key Features
 
-1. Webcam captures live video frames
-2. Facial landmarks are detected using dlib
-3. Eye Aspect Ratio (EAR) is calculated to detect eye closure
-4. Mouth Aspect Ratio (MAR) is calculated to detect yawning
-5. System applies smoothing and frame-based logic
-6. If fatigue is detected → alert is triggered
+* 👁️ **Drowsiness Detection** using Eye Aspect Ratio (EAR)
+* 😮 **Yawning Detection** using Mouth Aspect Ratio (MAR)
+* 🧠 **Attention Monitoring** (Head Pose + Face Position)
+* 🔊 **Smart Voice Alerts** (Text-to-Speech)
+* 🚨 **Multi-Level Alert System** (Warning → Critical)
+* ⏱️ **Cooldown Mechanism** (Prevents alert spam)
+* 🎥 **Real-Time Video Streaming Dashboard (Flask)**
+* ⚡ **Threaded Camera for High Performance**
+* 📊 **Fatigue Score Visualization (Backend Ready)**
 
 ---
 
-## 🔊 Detection Logic
+## 🧠 System Architecture
 
-* **Eyes Closed → Drowsiness**
-* **Mouth Open → Yawning**
-* **Both Conditions → Strong Alert 🚨**
+```text
+Webcam → Face Mesh → Landmark Detection → 
+EAR / MAR / Attention → Decision Engine → 
+Voice Alert + Alarm → Dashboard
+```
+
+---
+
+## 🔍 Detection Logic
+
+### 👁️ Drowsiness
+
+* Eyes closed for consecutive frames → **DROWSY**
+
+### 😮 Yawning
+
+* Mouth open beyond threshold → **YAWNING**
+
+### 👀 Attention Tracking
+
+* Face center (nose position) detects:
+
+  * Looking Left / Right
+  * Looking Up / Down
+  * Focused state
+
+---
+
+## 🔔 Smart Alert System
+
+| Condition         | Alert                         |
+| ----------------- | ----------------------------- |
+| Slight fatigue    | 🔊 "Stay alert"               |
+| Drowsy            | 🔊 Voice + 🚨 Alarm           |
+| Not focused       | 🔊 "Please focus on the road" |
+| Continuous drowsy | 🚨 Strong alert               |
 
 ---
 
@@ -39,22 +65,29 @@ This project is an AI-powered real-time system designed to detect driver fatigue
 
 * Python
 * OpenCV
-* dlib
+* MediaPipe
 * NumPy
 * SciPy
+* Flask (Dashboard)
+* pyttsx3 (Voice Alerts)
 
 ---
 
-## 📦 Project Structure
+## 📂 Project Structure
 
 ```
-driver-drowsiness-detection/
+ai-driver-monitoring-system/
+│
+├── app/
+│   ├── detection/
+│   ├── services/
+│   ├── api/
+│   └── frontend/
 │
 ├── main.py
 ├── alarm.mp3
 ├── requirements.txt
-├── README.md
-└── .gitignore
+└── README.md
 ```
 
 ---
@@ -64,8 +97,8 @@ driver-drowsiness-detection/
 ### 1️⃣ Clone Repository
 
 ```bash
-git clone https://github.com/omugale21/driver-drowsiness-detection.git
-cd driver-drowsiness-detection
+git clone https://github.com/omugale21/ai-driver-monitoring-system.git
+cd ai-driver-monitoring-system
 ```
 
 ---
@@ -78,17 +111,7 @@ pip install -r requirements.txt
 
 ---
 
-### 3️⃣ Download Model File
-
-Download the facial landmark model:
-
-http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2
-
-Extract and place the `.dat` file in the project root folder.
-
----
-
-### 4️⃣ Install Audio Dependency
+### 3️⃣ Install Audio Dependency
 
 ```bash
 sudo apt install mpg123
@@ -96,32 +119,39 @@ sudo apt install mpg123
 
 ---
 
-### 5️⃣ Run the Project
+### 4️⃣ Run Backend Server
 
 ```bash
-python main.py
+python -m app.api.app
 ```
 
 ---
 
-## ⚠️ Note
+### 5️⃣ Run Main Application
 
-* This project is designed for local systems with webcam support
-* Real-time webcam functionality may not work in browser-based deployments
-
----
-
-## 🔮 Future Improvements
-
-* Head pose estimation
-* Driver identity recognition
-* Fatigue score calculation
-* Mobile / embedded deployment
-* Web-based demo interface
+```bash
+python -m app.main
+```
 
 ---
 
-## ⭐ Support
+## 🎯 Use Cases
 
-If you like this project, give it a ⭐ on GitHub and share it!
+* 🚗 Driver safety systems
+* 🏭 Fleet monitoring
+* 🚕 Taxi driver monitoring
+* 🧪 AI/ML research projects
 
+---
+
+## 🔮 Future Enhancements
+
+* 📊 Fatigue Score System (0–100)
+* 🎥 Event-based video recording
+* ☁️ Cloud logging & analytics
+* 📱 Mobile deployment
+* 🤖 Deep learning-based fatigue prediction
+
+---
+
+🔥 This project demonstrates a **real-world AI safety system** combining computer vision, real-time processing, and intelligent alert mechanisms.
