@@ -1,21 +1,23 @@
-import pyttsx3
-from threading import Thread
+import threading
 
-# Initialize engine
-engine = pyttsx3.init()
-
-# 🔥 Configure voice
-engine.setProperty('rate', 150)  # Speed
-engine.setProperty('volume', 1.0)  # Max volume
+try:
+    import pyttsx3
+    engine = pyttsx3.init()
+    VOICE_ENABLED = True
+except:
+    print("[WARNING] Voice disabled (not supported in Docker)")
+    VOICE_ENABLED = False
 
 
 def speak(text):
-    try:
-        engine.say(text)
-        engine.runAndWait()
-    except:
-        pass
+    if not VOICE_ENABLED:
+        return
+    engine.say(text)
+    engine.runAndWait()
 
 
 def speak_async(text):
-    Thread(target=speak, args=(text,), daemon=True).start()
+    if not VOICE_ENABLED:
+        return
+    thread = threading.Thread(target=speak, args=(text,))
+    thread.start()

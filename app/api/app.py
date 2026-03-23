@@ -19,7 +19,7 @@ score_history = []
 event_log = []
 
 # -------------------------------
-# Receive frame from main.py
+# Receive frame
 # -------------------------------
 @app.route('/update_frame', methods=['POST'])
 def update_frame():
@@ -32,12 +32,42 @@ def update_frame():
         with lock:
             latest_frame = frame
 
-        print("Frame received")  # DEBUG
-
         return "OK"
     except Exception as e:
         print("Error:", e)
         return "Error"
+
+
+# -------------------------------
+# 🔥 NEW: Receive status via API
+# -------------------------------
+@app.route('/update_status', methods=['POST'])
+def update_status_api():
+    global current_status, score_history, event_log
+
+    data = request.json
+
+    status = data.get("status")
+    attention = data.get("attention")
+    score = data.get("fatigue_score")
+
+    current_status["status"] = status
+    current_status["attention"] = attention
+    current_status["fatigue_score"] = score
+
+    # Store history
+    score_history.append(score)
+    if len(score_history) > 30:
+        score_history.pop(0)
+
+    # Event log
+    timestamp = time.strftime("%H:%M:%S")
+    event_log.append(f"[{timestamp}] {status} | Score: {score}")
+
+    if len(event_log) > 30:
+        event_log.pop(0)
+
+    return "OK"
 
 
 # -------------------------------
@@ -69,7 +99,7 @@ def video():
 
 
 # -------------------------------
-# Dashboard
+# Dashboard APIs
 # -------------------------------
 @app.route('/')
 def index():
@@ -91,24 +121,5 @@ def events():
     return jsonify(event_log)
 
 
-# -------------------------------
-# Update status from main.py
-# -------------------------------
-def update_status(status, attention, score):
-    current_status["status"] = status
-    current_status["attention"] = attention
-    current_status["fatigue_score"] = score
-
-    score_history.append(score)
-    if len(score_history) > 30:
-        score_history.pop(0)
-
-    timestamp = time.strftime("%H:%M:%S")
-    event_log.append(f"[{timestamp}] {status}")
-
-    if len(event_log) > 30:
-        event_log.pop(0)
-
-
 if __name__ == "__main__":
-    app.run(debug=False, threaded=True)
+    app.run(host="0.0.0.0", port=5000, debug=False)
