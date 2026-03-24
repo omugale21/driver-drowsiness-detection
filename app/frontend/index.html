@@ -11,6 +11,7 @@ body {
     font-family: 'Segoe UI', sans-serif;
     background:#0f172a;
     color:white;
+    transition: background 0.3s;
 }
 
 h1 {
@@ -56,15 +57,16 @@ img {
 
 <h1>🚗 AI Driver Monitoring Dashboard</h1>
 
+<!-- 🔊 AUDIO -->
+<audio id="alarmSound" src="/static/alarm.mp3"></audio>
+
 <div class="container">
 
-<!-- LEFT -->
 <div class="card">
     <h3>Live Feed</h3>
     <img src="/video">
 </div>
 
-<!-- RIGHT -->
 <div>
 
 <div class="card">
@@ -114,6 +116,27 @@ let chart = new Chart(ctx, {
     }
 });
 
+// -------------------------------
+// 🔥 AUDIO UNLOCK (VERY IMPORTANT)
+// -------------------------------
+let audioUnlocked = false;
+
+document.addEventListener("click", () => {
+    if(!audioUnlocked){
+        let audio = document.getElementById("alarmSound");
+
+        audio.play().then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            audioUnlocked = true;
+            console.log("Audio unlocked");
+        }).catch(() => {});
+    }
+});
+
+// -------------------------------
+let alarmPlayed = false;
+
 function updateColor(score){
     let statusEl = document.getElementById('status');
 
@@ -122,26 +145,43 @@ function updateColor(score){
     if(score < 40){
         statusEl.innerText = "NORMAL";
         statusEl.classList.add("status-normal");
+        document.body.style.background = "#0f172a";
     }
     else if(score < 60){
         statusEl.innerText = "WARNING";
         statusEl.classList.add("status-warning");
+        document.body.style.background = "#3a2f00";
     }
     else{
         statusEl.innerText = "CRITICAL";
         statusEl.classList.add("status-critical","blink");
+        document.body.style.background = "#3f0000";
     }
 }
 
+// -------------------------------
 async function updateStatus(){
     let res = await fetch('/status');
     let data = await res.json();
 
-    document.getElementById('score').innerText = data.fatigue_score;
+    let score = data.fatigue_score;
 
-    updateColor(data.fatigue_score);
+    document.getElementById('score').innerText = score;
+
+    updateColor(score);
+
+    // 🔊 SOUND ALERT
+    if(score > 60){
+        if(!alarmPlayed && audioUnlocked){
+            document.getElementById("alarmSound").play();
+            alarmPlayed = true;
+        }
+    } else {
+        alarmPlayed = false;
+    }
 }
 
+// -------------------------------
 async function updateEvents(){
     let res = await fetch('/events');
     let data = await res.json();
@@ -150,6 +190,7 @@ async function updateEvents(){
         data.reverse().map(e => `<div style="padding:4px 0;">${e}</div>`).join('');
 }
 
+// -------------------------------
 async function updateChart(){
     let res = await fetch('/history');
     let data = await res.json();
@@ -157,18 +198,13 @@ async function updateChart(){
     chart.data.labels = data.map((_, i) => i);
     chart.data.datasets[0].data = data;
 
-    chart.data.datasets[0].borderColor = data.map(v => {
-        if(v < 40) return "#22c55e";
-        if(v < 60) return "#facc15";
-        return "#ef4444";
-    });
-
     chart.update();
 }
 
 setInterval(updateStatus, 1000);
 setInterval(updateEvents, 2000);
 setInterval(updateChart, 1000);
+
 </script>
 
 </body>

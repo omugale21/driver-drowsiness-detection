@@ -16,9 +16,6 @@ from app.services.voice_service import speak_async
 from app.services.screenshot_service import ScreenshotService
 from app.config import *
 
-# -------------------------------
-# Initialize
-# -------------------------------
 mp_face_mesh = mp.solutions.face_mesh
 
 face_mesh = mp_face_mesh.FaceMesh(
@@ -36,7 +33,6 @@ screenshot = ScreenshotService()
 
 cap = WebcamStream(src=0).start()
 
-# Session tracking
 max_fatigue = 0
 total_alerts = 0
 start_time = time.time()
@@ -44,11 +40,15 @@ start_time = time.time()
 frame_count = 0
 process_counter = 0
 
+# NEW
+no_face_counter = 0
+NO_FACE_THRESHOLD = 15
+
+last_behavior_alert = 0
+BEHAVIOR_COOLDOWN = 5
+
 print("Press 'q' to exit")
 
-# -------------------------------
-# Main Loop
-# -------------------------------
 while True:
 
     frame = cap.read()
@@ -60,7 +60,6 @@ while True:
 
     process_counter += 1
 
-    # Optimization: skip alternate frames
     if process_counter % 2 != 0:
         if os.environ.get("DISPLAY"):
             cv2.imshow("Driver Monitoring", frame)
@@ -76,6 +75,9 @@ while True:
     attention = "FOCUSED"
 
     if results.multi_face_landmarks:
+
+        no_face_counter = 0
+
         for face_landmarks in results.multi_face_landmarks:
 
             h, w, _ = frame.shape
@@ -85,7 +87,6 @@ while True:
                 for lm in face_landmarks.landmark
             ])
 
-            # Detection
             status, ear, mar, _ = drowsy_detector.process(points)
 
             pitch, yaw, roll = head_pose.estimate(frame, points)
@@ -93,39 +94,34 @@ while True:
 
             fatigue_score = fatigue_scorer.update(status, attention, mar)
 
-            # Session tracking
             max_fatigue = max(max_fatigue, fatigue_score)
 
             if fatigue_score > FATIGUE_WARNING:
                 total_alerts += 1
 
-            # Alerts
             trigger_alert(fatigue_score, attention)
 
-            # Behavior
             is_distracted = behavior.check_distraction(attention)
             is_microsleep = behavior.check_microsleep(status)
 
-            if is_distracted:
+            current_time = time.time()
+
+            if is_distracted and (current_time - last_behavior_alert > BEHAVIOR_COOLDOWN):
                 speak_async("Driver distracted")
+                last_behavior_alert = current_time
 
-            if is_microsleep:
+            if is_microsleep and (current_time - last_behavior_alert > BEHAVIOR_COOLDOWN):
                 speak_async("Micro sleep detected")
+                last_behavior_alert = current_time
 
-            # Recording
             if RECORDING_ENABLED and fatigue_score > FATIGUE_CRITICAL:
                 recorder.start(frame)
                 recorder.write(frame)
             else:
                 recorder.stop()
 
-            # Screenshot
             if SCREENSHOT_ENABLED and fatigue_score > FATIGUE_SCREENSHOT:
                 screenshot.capture(frame)
-
-            # -------------------------------
-            # UI Overlay
-            # -------------------------------
 
             if fatigue_score < 40:
                 color = (0, 255, 0)
@@ -145,53 +141,42 @@ while True:
             cv2.putText(frame, f"Score: {fatigue_score}", (20, 100),
                         cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
 
-    # -------------------------------
-    #  DOCKER FIX (IMPORTANT)
-    # -------------------------------
+    else:
+        no_face_counter += 1
+
+        if no_face_counter > NO_FACE_THRESHOLD:
+            status = "NO_FACE"
+            attention = "DISTRACTED"
+            fatigue_score = 80
+
+            trigger_alert(fatigue_score, attention)
+
+            cv2.putText(frame, "FACE NOT VISIBLE!", (20, 40),
+                        cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+
     frame_count += 1
 
-    if frame_count % 5 == 0:
+    if frame_count % 10 == 0:
         _, jpeg = cv2.imencode('.jpg', frame)
 
         try:
-            requests.post(
-                "http://flask:5000/update_frame",   # ✅ FIXED
-                data=jpeg.tobytes(),
-                timeout=0.1
-            )
+            requests.post("http://flask:5000/update_frame", data=jpeg.tobytes(), timeout=0.2)
         except:
             pass
 
         try:
-            requests.post(
-                "http://flask:5000/update_status",  # ✅ FIXED
-                json={
-                    "status": status,
-                    "attention": attention,
-                    "fatigue_score": fatigue_score
-                },
-                timeout=0.1
-            )
+            requests.post("http://flask:5000/update_status", json={
+                "status": status,
+                "attention": attention,
+                "fatigue_score": fatigue_score
+            }, timeout=0.2)
         except:
             pass
 
-    # Show window only in local system
     if os.environ.get("DISPLAY"):
         cv2.imshow("Driver Monitoring", frame)
-
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
-
-# -------------------------------
-# Session Summary
-# -------------------------------
-total_time = int(time.time() - start_time)
-
-print("\n===== SESSION SUMMARY =====")
-print(f"Total Time: {total_time} sec")
-print(f"Max Fatigue Score: {max_fatigue}")
-print(f"Total Alerts: {total_alerts}")
-print("===========================\n")
 
 cap.stop()
 cv2.destroyAllWindows()

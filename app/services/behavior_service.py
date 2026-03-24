@@ -1,36 +1,23 @@
-import time
-from app.config import DISTRACTION_TIME, MICROSLEEP_TIME
-
-
 class BehaviorMonitor:
     def __init__(self):
-        self.distraction_start = None
-        self.drowsy_start = None
+        self.distraction_counter = 0
+        self.microsleep_counter = 0
+
+        self.DISTRACTION_THRESHOLD = 15
+        self.MICROSLEEP_THRESHOLD = 10
 
     def check_distraction(self, attention):
         if attention != "FOCUSED":
-            if self.distraction_start is None:
-                self.distraction_start = time.time()
-
-            duration = time.time() - self.distraction_start
-
-            if duration > DISTRACTION_TIME:
-                return True
+            self.distraction_counter += 1
         else:
-            self.distraction_start = None
+            self.distraction_counter = 0
 
-        return False
+        return self.distraction_counter > self.DISTRACTION_THRESHOLD
 
     def check_microsleep(self, status):
         if status == "DROWSY":
-            if self.drowsy_start is None:
-                self.drowsy_start = time.time()
-
-            duration = time.time() - self.drowsy_start
-
-            if duration > MICROSLEEP_TIME:
-                return True
+            self.microsleep_counter += 1
         else:
-            self.drowsy_start = None
+            self.microsleep_counter = 0
 
-        return False
+        return self.microsleep_counter > self.MICROSLEEP_THRESHOLD

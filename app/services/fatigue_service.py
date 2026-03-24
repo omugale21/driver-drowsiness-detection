@@ -1,35 +1,31 @@
 class FatigueScorer:
     def __init__(self):
         self.score = 0
+        self.smoothing_factor = 0.8
 
     def update(self, status, attention, mar):
 
-        # -------------------------------
-        # Drowsiness
-        # -------------------------------
+        temp_score = self.score
+
         if status == "DROWSY":
-            self.score += 10
+            temp_score += 10
         else:
-            self.score -= 3
+            temp_score -= 2
 
-        # -------------------------------
-        # Yawning
-        # -------------------------------
         if mar > 0.7:
-            self.score += 15
+            temp_score += 10
 
-        # -------------------------------
-        # Attention
-        # -------------------------------
         if attention != "FOCUSED":
-            self.score += 5
+            temp_score += 5
         else:
-            self.score -= 2
+            temp_score -= 2
 
-        # -------------------------------
-        # Clamp score (0–100)
-        # -------------------------------
-        self.score = max(0, min(100, self.score))
+        temp_score = max(0, min(100, temp_score))
+
+        self.score = int(
+            self.smoothing_factor * self.score +
+            (1 - self.smoothing_factor) * temp_score
+        )
 
         return self.score
 

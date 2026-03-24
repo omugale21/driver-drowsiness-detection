@@ -4,7 +4,12 @@ import numpy as np
 import threading
 import time
 
-app = Flask(__name__, template_folder="../frontend")
+# ✅ FINAL FIX: ADD static_folder
+app = Flask(
+    __name__,
+    template_folder="../frontend",
+    static_folder="../static"
+)
 
 latest_frame = None
 lock = threading.Lock()
@@ -39,7 +44,7 @@ def update_frame():
 
 
 # -------------------------------
-#  NEW: Receive status via API
+# Receive status via API
 # -------------------------------
 @app.route('/update_status', methods=['POST'])
 def update_status_api():
@@ -55,12 +60,10 @@ def update_status_api():
     current_status["attention"] = attention
     current_status["fatigue_score"] = score
 
-    # Store history
     score_history.append(score)
     if len(score_history) > 30:
         score_history.pop(0)
 
-    # Event log
     timestamp = time.strftime("%H:%M:%S")
     event_log.append(f"[{timestamp}] {status} | Score: {score}")
 
