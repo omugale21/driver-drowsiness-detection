@@ -62,11 +62,11 @@ The system includes a web-based dashboard that shows:
 driver-monitoring-system/
 │
 ├── app/
-│   ├── api/            # Flask backend
-│   ├── detection/      # Drowsiness & head pose logic
-│   ├── services/       # Alerts, recording, behavior tracking
-│   ├── frontend/       # Dashboard UI
-│   └── static/         # Static files (alarm audio)
+│ ├── api/ # Flask backend
+│ ├── detection/ # Drowsiness & head pose logic
+│ ├── services/ # Alerts, recording, behavior tracking
+│ ├── frontend/ # Dashboard UI
+│ └── static/ # Static files (alarm audio)
 │
 ├── Dockerfile
 ├── docker-compose.yml
