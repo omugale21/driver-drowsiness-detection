@@ -5,7 +5,7 @@ It detects driver fatigue, drowsiness, yawning, distraction, and face occlusion,
 
 The system is designed to simulate a real-world driver safety solution and has been containerized using Docker for easy deployment.
 
-
+---
 
 ## 🚀 What This Project Does
 
@@ -19,7 +19,7 @@ The system is designed to simulate a real-world driver safety solution and has b
 * Captures screenshots and records video during critical situations
 * Plays alert sound via browser (Docker-compatible solution)
 
-
+---
 
 ## 🧠 Core Logic (Simple Explanation)
 
@@ -30,7 +30,7 @@ The system is designed to simulate a real-world driver safety solution and has b
 * Based on all signals → a **fatigue score (0–100)** is calculated
 * If score crosses threshold → alert is triggered
 
-
+---
 
 ## 🖥️ Dashboard
 
@@ -43,7 +43,7 @@ The system includes a web-based dashboard that shows:
 * Fatigue graph visualization
 * Visual and audio alerts
 
-
+---
 
 ## 🛠️ Tech Used
 
@@ -55,7 +55,7 @@ The system includes a web-based dashboard that shows:
 * JavaScript (Chart.js)
 * Docker & Docker Compose
 
-
+---
 
 ## 📦 Project Structure
 
@@ -75,7 +75,7 @@ driver-monitoring-system/
 └── README.md
 ```
 
-
+---
 
 ## ⚙️ How to Run (Docker)
 
@@ -86,7 +86,7 @@ docker compose up --build
 Then open:  
 http://localhost:5000  
 
-
+---
 
 ## ⚠️ Notes
 
@@ -96,13 +96,13 @@ http://localhost:5000
 * Audio alerts are handled in the browser due to Docker limitations
 * Click once on the dashboard to enable sound alerts
 
-
+---
 
 ## 🎥 Demo
 
 I will be adding a demo video and screenshots soon.
 
-
+---
 
 ## 🔮 Future Improvements
 
@@ -112,7 +112,7 @@ I will be adding a demo video and screenshots soon.
 * Mobile/edge deployment
 * API-based integration
 
-
+---
 
 ## 📌 Final Thoughts
 
